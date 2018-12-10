@@ -43,17 +43,6 @@ class CriticArchitecture(nn.Module, RLModel):
         out = self.fc3(h)
         return out
 
-    def predict(self, x, actions, tensor=False):
-        if type(x) is not torch.Tensor:
-            x = torch.from_numpy(x).float()
-        if type(actions) is not torch.Tensor:
-            actions = torch.from_numpy(actions).float()
-        y = self.forward(x, actions)
-        if tensor:
-            return y
-        else:
-            with torch.no_grad():
-                return y.cpu().data.numpy()
 
     def reset_parameters(self):
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))
@@ -85,16 +74,6 @@ class ActorArchitecture(nn.Module, RLModel):
         h = self.bn2(h)
         out = F.tanh(self.fc3(h))
         return out
-
-    def predict(self, x, tensor=False):
-        if type(x) is not torch.Tensor:
-            x = torch.from_numpy(x).float()
-        y = self.forward(x)
-        if tensor:
-            return y
-        else:
-            with torch.no_grad():
-                return y.cpu().data.numpy()
 
     def reset_parameters(self):
         self.fc1.weight.data.uniform_(*hidden_init(self.fc1))

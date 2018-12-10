@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import random
 from collections import deque
-
+import torch
 
 def ewma(x):
     return pd.Series(x).ewm(span=100).mean()
@@ -26,9 +26,9 @@ class ExperienceReplay():
     def draw_sample(self, sample_size):
         buffer_sample = random.choices(self.buffer, k=sample_size)
         states, actions, rewards, next_states, dones = zip(*buffer_sample)
-        states = np.array(states).squeeze()
-        actions = np.array(actions).squeeze()
-        rewards = np.expand_dims(np.array(rewards), 1)
-        next_states = np.array(next_states).squeeze()
-        dones = np.expand_dims(np.array(dones), 1)
+        states = torch.from_numpy(np.array(states).squeeze()).float()
+        actions = torch.from_numpy(np.array(actions).squeeze()).float()
+        rewards = torch.from_numpy(np.expand_dims(np.array(rewards), 1)).float()
+        next_states = torch.from_numpy(np.array(next_states).squeeze()).float()
+        dones = torch.from_numpy(np.expand_dims(np.array(dones)+0, 1)).float()
         return states, actions, rewards, next_states, dones
