@@ -3,9 +3,33 @@ import numpy as np
 import random
 from collections import deque
 import torch
+import matplotlib.pyplot as plt
 
-def ewma(x):
-    return pd.Series(x).ewm(span=100).mean()
+
+def ewma(x, span=100):
+    return pd.Series(x).ewm(span=span).mean()
+
+
+def ewmsd(x, span=100):
+    return pd.Series(x).ewm(span=span).std()
+
+
+def plot_smoothed_return(scores, span=100):
+    means = ewma(scores, span)
+    stds = ewmsd(scores, span)
+
+    plt.figure(figsize=(15, 6))
+    plt.grid()
+
+    plt.scatter(range(len(scores)), scores, alpha=1, s=1, color="grey")
+    plt.fill_between(range(len(means)), means + stds, means - stds,
+                     color='#1f77b4', alpha=.3)
+    plt.plot(means, color='#1f77b4')
+
+    plt.xlabel("# of episodes")
+    plt.ylabel("Cummulative reward")
+    plt.legend(["Average return", "Individual returns", "Standard deviation"])
+    plt.show()
 
 
 class ExperienceReplay():
