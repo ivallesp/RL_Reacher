@@ -18,7 +18,6 @@ def plot_smoothed_return(scores, span=100):
     means = ewma(scores, span)
     stds = ewmsd(scores, span)
 
-    plt.figure(figsize=(15, 6))
     plt.grid()
 
     plt.scatter(range(len(scores)), scores, alpha=1, s=1, color="grey")
@@ -29,7 +28,6 @@ def plot_smoothed_return(scores, span=100):
     plt.xlabel("# of episodes")
     plt.ylabel("Cummulative reward")
     plt.legend(["Average return", "Individual returns", "Standard deviation"])
-    plt.show()
 
 
 class ExperienceReplay():
