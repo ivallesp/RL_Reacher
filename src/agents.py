@@ -4,10 +4,26 @@ from src.rl_utilities import ExperienceReplay
 import random
 
 
-# DDPG Agent
 class DDPGAgent():
-    def __init__(self, critic_arch, actor_arch, state_size, action_size, tau, epsilon, gamma, replay_size, batch_size,
+    def __init__(self, critic_arch, actor_arch, state_size, action_size, tau, gamma, replay_size, batch_size,
                  n_batches_train, random_seed):
+        """
+        Agent implementing DDPG algorithm. More info here: https://arxiv.org/abs/1509.02971
+
+        :param critic_arch: pytorch neural network implementing a critic function (s, a -> Q), located in the
+        src.models module (pytorch model object)
+        :param actor_arch: pytorch neural network implementing a actor function (s -> P(a|s)), located in the
+        src.models module (pytorch model object)
+        :param state_size: size of the state space (int)
+        :param action_size: size of the action space (int)
+        :param tau: constant controling the rate of the soft update of the target networks from the local
+        networks (float)
+        :param gamma: discount factor (float)
+        :param replay_size: size of the experience replay buffer (int)
+        :param batch_size: size of the batches which are going to be used to train the neural networks (int)
+        :param n_batches_train: number of batches to train in each agent step (int)
+        :param random_seed: random seed for numpy and pytorch (int)
+        """
         np.random.seed(random_seed)
         self.critic_local = critic_arch(state_size, action_size, random_seed)
         self.critic_target = critic_arch(state_size, action_size, random_seed)
@@ -28,7 +44,6 @@ class DDPGAgent():
         self.replay_buffer = ExperienceReplay(int(replay_size))
 
         self.tau = tau
-        self.epsilon = epsilon
         self.gamma = gamma
         self.batch_size = batch_size
         self.n_batches_train = n_batches_train
