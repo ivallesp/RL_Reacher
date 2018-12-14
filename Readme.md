@@ -88,10 +88,12 @@ Both, the single and the multiple-arm agents have been solved in this repository
 
 #### Single-arm environment
 The environment is solved in approximately 250 episodes.
+
 ![single results](./imgs/reward_single.png)
 
 #### Multiple-arm environment 
 The environment is solved in aproximately 90 episodes.
+
 ![single results](./imgs/reward_multi.png)
 
 ## Conclusions
@@ -113,4 +115,4 @@ A set of potential improvements have collected and summarized below.
 This repository is **totally open to contributions**.  If you find a bug, improvement or just want to extend the documentation or refactor the code, please, feel free to perform a pull request. It will be revised as soon as possible :-).
 
 ## License
-This repository has been licensed under MIT agreement. 
+This repository has been licensed under MIT agreement. For more details, please review the `LICENSE` file. Copyright (c) 2018 Iván Vallés Pérez
