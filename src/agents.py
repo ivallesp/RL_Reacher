@@ -2,11 +2,12 @@ import copy
 from src.models import *
 from src.rl_utilities import ExperienceReplay
 import random
+from torch import optim
 
 
 class DDPGAgent():
     def __init__(self, critic_arch, actor_arch, state_size, action_size, tau, gamma, replay_size, batch_size,
-                 n_batches_train, random_seed):
+                 n_batches_train, alpha=0, random_seed=655321):
         """
         Agent implementing DDPG algorithm. More info here: https://arxiv.org/abs/1509.02971
 
@@ -22,6 +23,7 @@ class DDPGAgent():
         :param replay_size: size of the experience replay buffer (int)
         :param batch_size: size of the batches which are going to be used to train the neural networks (int)
         :param n_batches_train: number of batches to train in each agent step (int)
+        :param alpha: effort punishment (experiment) (float)
         :param random_seed: random seed for numpy and pytorch (int)
         """
         np.random.seed(random_seed)
@@ -32,7 +34,6 @@ class DDPGAgent():
         self.actor_local = actor_arch(state_size, action_size, random_seed)
         self.actor_target = actor_arch(state_size, action_size, random_seed)
         self.actor_optimizer = optim.Adam(self.actor_local.parameters(), lr=2e-4)
-
 
         # Equalize target and local networks
         self._soft_target_update(tau=1)
@@ -47,8 +48,18 @@ class DDPGAgent():
         self.gamma = gamma
         self.batch_size = batch_size
         self.n_batches_train = n_batches_train
+        self.alpha = alpha
 
     def step(self, states, actions, rewards, next_states, dones):
+        """
+        Update the experience replay buffer and trains the networks
+        :param states: observation variables of the MDP (iterable)
+        :param actions: actions taken at each step (iteranble)
+        :param rewards: rewards achieved (iterable)
+        :param next_states: next observation where the agent lead to (iterable)
+        :param dones: did the environment done? (iterable)
+        :return: None
+        """
         # Update replay buffer
         for s, a, r, ns, d in zip(states, actions, rewards, next_states, dones):
             self.replay_buffer.append([s, a, r, ns, d])
@@ -61,20 +72,43 @@ class DDPGAgent():
             next_states_batch, \
             dones_batch = self.replay_buffer.draw_sample(self.batch_size)
 
+            effort = torch.sqrt((actions_batch**2).sum(dim=1))
+            effort = torch.unsqueeze(effort, 1)
+            rewards_batch -= self.alpha*effort
+
             # Train
             if self.replay_buffer.length > self.batch_size:
                 self.update(states_batch, actions_batch, rewards_batch, next_states_batch, dones_batch)
 
 
     def update(self, states, actions, rewards, next_states, dones):
+        """
+        Updates the networks using the data provided
+        :param states: observation variables of the MDP (iterable)
+        :param actions: actions taken at each step (iteranble)
+        :param rewards: rewards achieved (iterable)
+        :param next_states: next observation where the agent lead to (iterable)
+        :param dones: did the environment done? (iterable)
+        :return: None
+        """
         self._update_critic(states, actions, rewards, next_states, dones)
         self._update_actor(states)
         self._soft_target_update()
 
     def reset(self):
+        """
+        Performs the agent related tasks required when reseting the environment.
+        :return: None
+        """
         self.noise.reset()
 
     def act(self, states, epsilon=1):
+        """
+        Calculates the next action (given the experience) (iterable)
+        :param states: observations of the MDP (iterable)
+        :param epsilon: exploration rate (float)
+        :return: actions to take (iterable)
+        """
         states = torch.from_numpy(states).float()
         if states.dim==1:
             states = torch.unsqueeze(states, 0)
@@ -87,12 +121,26 @@ class DDPGAgent():
         return actions
 
     def _soft_target_update(self, tau=None):
+        """
+        Updates the target networks a step towards the critic ones
+        :param tau: Update rate
+        :return: None
+        """
         if tau is None:
             tau = self.tau
         self.critic_target.copy_weights_from(self.critic_local, tau)
         self.actor_target.copy_weights_from(self.actor_local, tau)
 
     def _update_critic(self, states, actions, rewards, next_states, dones):
+        """
+        Updates the critic network
+        :param states: observation variables of the MDP (iterable)
+        :param actions: actions taken at each step (iteranble)
+        :param rewards: rewards achieved (iterable)
+        :param next_states: next observation where the agent lead to (iterable)
+        :param dones: did the environment done? (iterable)
+        :return: None
+        """
         # Calculate td target
         next_actions = self.actor_target.forward(next_states)
         q_value_next_max = self.critic_target.forward(next_states, next_actions)
@@ -109,6 +157,11 @@ class DDPGAgent():
         self.critic_optimizer.step()
 
     def _update_actor(self, states):
+        """
+        Updates the actor network
+        :param states: observation variables of the MDP (iterable)
+        :return: None
+        """
         actions_predicted = self.actor_local.forward(states)
         critic_action_values = self.critic_local.forward(states, actions_predicted)
         # Calculate the loss
