@@ -8,8 +8,8 @@ This repository contains an implementation of the [DDPG](https://arxiv.org/abs/1
 (Unity). The task in the environment consists on reaching a moving spatial goal by controling an articulated arm with
 4 torques. Reward is given when the target is reached. 
 
-![Solved environment single]#(./imgs/reacher_single.gif)
-![Solved environment multiple]#(./imgs/reacher_multiple.gif)
+![Solved environment single](./imgs/reacher_single.gif)
+![Solved environment multiple](./imgs/reacher_multiple.gif)
 
 
 ## Environment dynamics
@@ -42,13 +42,7 @@ The environment is considered to be solved when the average cumulative reward ov
 
 
 ## Methods
-In order to solve the environment, [DDPG](https://arxiv.org/abs/1509.02971) (Deep Deterministic Policy Gradient) algorithm has been used. It is an **actor-critic model-free algorithm** based on the [DPG](http://proceedings.mlr.press/v32/silver14.pdf) (Deterministic Policy Gradient) algorithm that can operate over **continuous action spaces**. The algorithm is defined as follows.
-
-$\nabla_{\theta^\mu}J = \mathop{\mathbb{E}}_{s_t \sim p^\beta} [\nabla_a Q(s,a|\theta^Q)|_{s=s_t, a=\mu(s_t)} \nabla_{\theta_\mu} \mu(s|\theta^\mu)|_{s=s_t}] $
-
-$L(\theta^Q) = \mathop{\mathbb{E}}_{s \sim p^\beta, a_t \sim \beta, r_t \sim E}[(Q(s_t, a_t|\mu^Q)-y_t)^2]$
-
-where $y_t = r(s_t, a_t) + \gamma Q(s_{t+1}, \mu(s_{t+1})|_{\theta^Q})$, $\theta^Q$ are the parameters of the critic, $\theta^mu$ are the parameters of the actor, $E$ represents the environment, $\beta$ is the behavior policy and $\mu$ is the learned policy.
+In order to solve the environment, [DDPG](https://arxiv.org/abs/1509.02971) (Deep Deterministic Policy Gradient) algorithm has been used. It is an **actor-critic model-free algorithm** based on the [DPG](http://proceedings.mlr.press/v32/silver14.pdf) (Deterministic Policy Gradient) algorithm that can operate over **continuous action spaces**. The algorithm math details are defined in the jupyter notebooks under the `notebooks`folder.
 
 ![DDPG Algorithm](./imgs/ddpg_algorithm.png)
 
